@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo Interfaz Móvil</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #e5e5e5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .mobile {
+            width: 100%;
+            max-width: 400px;
+            background: #f5f5f5;
+            border: 2px solid #aaa;
+            padding: 15px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 15px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #888;
+            background: #ddd;
+            cursor: pointer;
+            text-align: center;
+            border-radius: 5px 5px 0 0;
+            font-size: 14px;
+        }
+
+        .tab.active {
+            background: #4a90e2;
+            color: white;
+        }
+
+        .content {
+            display: none;
+        }
+
+        .content.active {
+            display: block;
+        }
+
+        input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 8px;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+
+        button {
+            padding: 8px 12px;
+            margin-top: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 12px;
+        }
+
+        .tabla-container {
+            max-height: 220px;
+            /* Aproximadamente 5 filas */
+            overflow-y: auto;
+            border: 1px solid #888;
+            border-radius: 5px;
+        }
+
+        .tabla-container table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .tabla-container th,
+        .tabla-container td {
+            border: 1px solid #ccc;
+            padding: 6px;
+            font-size: 12px;
+        }
+
+        th,
+        td {
+            border: 1px solid #888;
+            padding: 5px;
+            text-align: center;
+        }
+
+        th {
+            background: #4a90e2;
+            color: white;
+        }
+
+        .top-button {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="mobile">
+
+        <div style="text-align:right; margin-bottom:10px;">
+            <button onclick="cerrarSesion()" style="background:red; color:white; border:none; padding:5px 10px;">
+                Cerrar sesión
+            </button>
+        </div>
+
+        <div class="tabs">
+            <div class="tab active" onclick="showTab('registrar')">registrar cliente</div>
+            <div class="tab" onclick="showTab('revisar')">revisar cliente</div>
+        </div>
+
+        <!-- REGISTRAR CLIENTE -->
+        <div id="registrar" class="content active">
+            <h3>Nuevo cliente:</h3>
+            <input id="primerNombre" type="text" placeholder="primer nombre">
+            <input id="segundoNombre" type="text" placeholder="segundo nombre">
+            <input id="cedula" type="text" placeholder="Cedula">
+            <input id="telefono" type="text" placeholder="telefono">
+
+            <p><strong>Cantidad del préstamo</strong></p>
+            <input id="monto" type="number" placeholder="cuanto requiere ?">
+
+            <button onclick="crearCliente()">Crear</button>
+        </div>
+
+        <!-- REVISAR CLIENTE -->
+        <div id="revisar" class="content">
+            <h3>Deudor:</h3>
+            <input id="buscarCedula" type="text" placeholder="Ingrese cédula">
+            <button onclick="buscarCliente()">Buscar</button>
+
+            <div class="top-button">
+                <div></div>
+                <button onclick="cargarTodosClientes()">actualizar</button>
+            </div>
+
+            <!-- CONTENEDOR CON SCROLL -->
+            <div class="tabla-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>primer nombre</th>
+                            <th>segundo nombre</th>
+                            <th>cedula</th>
+                            <th>telefono</th>
+                            <th>deuda</th>
+                            <th>estado</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaClientes"></tbody>
+                </table>
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+
+        const cobradorId = localStorage.getItem("cobradorId");
+
+        if (!cobradorId) {
+            window.location.href = "login.html";
+        }
+
+        const API_URL = "http://localhost:3000"; // cambia el puerto si usas otro
+
+        function showTab(tabId) {
+            const tabs = document.querySelectorAll('.tab');
+            const contents = document.querySelectorAll('.content');
+
+            tabs.forEach(tab => tab.classList.remove('active'));
+            contents.forEach(content => content.classList.remove('active'));
+
+            if (tabId === 'registrar') {
+                tabs[0].classList.add('active');
+                document.getElementById('registrar').classList.add('active');
+            } else {
+                tabs[1].classList.add('active');
+                document.getElementById('revisar').classList.add('active');
+            }
+        }
+
+        // 🔹 CERRAR SESION
+        function cerrarSesion() {
+            localStorage.removeItem("cobradorId");
+            localStorage.removeItem("cobradorNombre");
+            window.location.href = "login.html";
+        }
+
+        // 🔹 CREAR CLIENTE
+        async function crearCliente() {
+
+            const primerNombre = document.getElementById("primerNombre").value.trim();
+            const segundoNombre = document.getElementById("segundoNombre").value.trim();
+            const cedula = document.getElementById("cedula").value.trim();
+            const telefono = document.getElementById("telefono").value.trim();
+            const monto = document.getElementById("monto").value.trim();
+
+            if (!primerNombre || !segundoNombre || !cedula || !telefono || !monto) {
+                alert("Todos los campos son obligatorios");
+                return;
+            }
+
+            if (Number(monto) <= 0) {
+                alert("El monto debe ser mayor que 0");
+                return;
+            }
+
+            const data = {
+                primerNombre,
+                segundoNombre,
+                cedula,
+                telefono,
+                monto: Number(monto),
+                cobradorId: cobradorId
+            };
+
+            const res = await fetch(`${API_URL}/cliente`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            });
+
+            if (res.ok) {
+                alert("Cliente creado correctamente");
+                document.querySelectorAll("#registrar input").forEach(i => i.value = "");
+            } else {
+                alert("Error al crear cliente");
+            }
+        }
+
+        // 🔹 BUSCAR CLIENTE
+        async function buscarCliente() {
+
+            const cedula = document.getElementById("buscarCedula").value.trim();
+
+            if (!cedula) {
+                alert("Ingrese una cédula para buscar");
+                return;
+            }
+
+            const res = await fetch(`${API_URL}/cliente/${cedula}`);
+
+            if (!res.ok) {
+                alert("Cliente no encontrado");
+                return;
+            }
+
+            const cliente = await res.json();
+
+            let estado = "";
+            let boton = "";
+
+            if (cliente.deuda > 0) {
+                estado = "<span style='color:orange;'>Pendiente</span>";
+                boton = `<button onclick="eliminarDeuda('${cliente.cedula}')">Eliminar deuda</button>`;
+            } else {
+                estado = "<span style='color:green;'>Pagado</span>";
+                boton = "";
+            }
+
+            document.getElementById("tablaClientes").innerHTML = `
+        <tr>
+            <td>${cliente.primerNombre}</td>
+            <td>${cliente.segundoNombre}</td>
+            <td>${cliente.cedula}</td>
+            <td>${cliente.telefono}</td>
+            <td>${cliente.deuda}</td>
+            <td>${estado}</td>
+        </tr>
+    `;
+
+            if (boton) {
+                document.getElementById("tablaClientes").innerHTML += `
+            <tr>
+                <td colspan="6">${boton}</td>
+            </tr>
+        `;
+            }
+        }
+
+        // CARGAR TODOS LOS CLIENTES
+        async function cargarTodosClientes() {
+
+            const res = await fetch(`${API_URL}/clientes/${cobradorId}`);
+            const clientes = await res.json();
+
+            let filas = "";
+
+            clientes.forEach(cliente => {
+
+                let estado = cliente.deuda > 0
+                    ? "<span style='color:orange;'>Pendiente</span>"
+                    : "<span style='color:green;'>Pagado</span>";
+
+                filas += `
+        <tr>
+            <td>${cliente.primerNombre}</td>
+            <td>${cliente.segundoNombre}</td>
+            <td>${cliente.cedula}</td>
+            <td>${cliente.telefono}</td>
+            <td>${cliente.deuda}</td>
+            <td>${estado}</td>
+        </tr>`;
+            });
+
+            document.getElementById("tablaClientes").innerHTML = filas;
+        }
+
+
+        // 🔹 ELIMINAR DEUDA
+
+        async function eliminarDeuda(cedula) {
+
+            const confirmar = confirm("¿Está seguro de eliminar la deuda?");
+            if (!confirmar) return;
+
+            const res = await fetch(`${API_URL}/eliminar-deuda/${cedula}`, {
+                method: "PUT"
+            });
+
+            if (res.ok) {
+                alert("Deuda eliminada");
+                cargarTodosClientes(); // refresca la tabla
+            } else {
+                alert("Error al eliminar deuda");
+            }
+        }
+
+
+
+
+    </script>
+
+</body>
+
+</html>

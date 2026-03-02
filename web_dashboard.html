@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Admin</title>
+
+    <style>
+        body {
+            font-family: Arial;
+            background: #f2f2f2;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border: 1px solid #ccc;
+        }
+
+        input,
+        button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+
+        button {
+            background: green;
+            color: white;
+            border: none;
+        }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 15px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 10px;
+            text-align: center;
+            background: #ccc;
+            cursor: pointer;
+        }
+
+        .tab.active {
+            background: #3498db;
+            color: white;
+        }
+
+        .content {
+            display: none;
+        }
+
+        .content.active {
+            display: block;
+        }
+
+        .tabla-clientes {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tabla-clientes th,
+        .tabla-clientes td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: center;
+        }
+
+        .tabla-clientes th {
+            background-color: #3498db;
+            color: white;
+        }
+
+        .cobrador-card {
+            background: #f4f4f4;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div style="text-align:right; margin-bottom:10px;">
+        <button onclick="cerrarSesion()" style="background:red; color:white; border:none;">
+            Cerrar sesión
+        </button>
+    </div>
+
+    <div class="container">
+
+        <!-- PESTAÑAS -->
+        <div class="tabs">
+            <div class="tab active" onclick="showTab('registrar')">
+                registrar cobradores
+            </div>
+            <div class="tab" onclick="showTab('logistica')">
+                logística
+            </div>
+            <div class="tab" onclick="showTab('panel')">
+                panel de control
+            </div>
+        </div>
+
+        <!-- CONTENIDO REGISTRAR -->
+        <div id="registrar" class="content active">
+
+            <h3>Crear cobrador</h3>
+
+            <input id="nombre" placeholder="Nombre">
+            <input id="usuario" placeholder="Usuario">
+            <input id="password" placeholder="Contraseña">
+
+            <button onclick="crearUsuario()">Crear</button>
+
+            <hr>
+
+            <h3>Deshabilitar cobrador</h3>
+
+            <input id="buscarCobradorInput" placeholder="Usuario del cobrador">
+            <button onclick="buscarCobrador()">Buscar</button>
+
+            <div id="resultadoCobrador"></div>
+
+        </div>
+
+        <!-- CONTENIDO LOGISTICA -->
+        <div id="logistica" class="content">
+            <h3>Logística</h3>
+            <div id="contenedorLogistica"></div>
+        </div>
+
+
+        <!-- CONTENIDO PANEL DE CONTROL -->
+        <div id="panel" class="content">
+
+            <h3>Crear Cliente</h3>
+
+            <input id="p_primerNombre" placeholder="Primer Nombre">
+            <input id="p_segundoNombre" placeholder="Segundo Nombre">
+            <input id="p_cedula" placeholder="Cédula">
+            <input id="p_telefono" placeholder="Teléfono">
+            <input id="p_deuda" placeholder="Deuda Inicial">
+
+            <select id="p_cobrador"></select>
+
+            <button onclick="crearClienteAdmin()">Crear Cliente</button>
+
+            <hr>
+
+            <h3>Revisar Cliente</h3>
+
+            <input id="p_buscarCedula" placeholder="Cédula del cliente">
+            <button onclick="buscarClienteAdmin()">Buscar</button>
+
+            <div id="resultadoPanel"></div>
+
+        </div>
+
+    </div>
+
+    <script>
+
+        const adminId = localStorage.getItem("adminId");
+
+        if (!adminId) {
+            window.location.href = "login_dashboard.html";
+        }
+
+        const API_URL = "http://localhost:3000";
+
+        function showTab(tabId) {
+
+            document.querySelectorAll(".tab").forEach(tab => {
+                tab.classList.remove("active");
+            });
+
+            document.querySelectorAll(".content").forEach(content => {
+                content.classList.remove("active");
+            });
+
+            event.target.classList.add("active");
+            document.getElementById(tabId).classList.add("active");
+
+            // 🔹 Acciones específicas por pestaña
+
+            if (tabId === "logistica") {
+                cargarLogistica();
+            }
+
+            if (tabId === "panel") {
+                cargarCobradoresSelect();
+            }
+        }
+
+        async function cargarLogistica() {
+
+            const res = await fetch(`${API_URL}/logistica`);
+            const data = await res.json();
+
+            const contenedor = document.getElementById("contenedorLogistica");
+            contenedor.innerHTML = "";
+
+            data.forEach(cobrador => {
+
+                const div = document.createElement("div");
+                div.classList.add("cobrador-card");
+
+                let html = `
+            <h4>Cobrador: ${cobrador.usuario}</h4>
+        `;
+
+                if (cobrador.clientes.length === 0) {
+                    html += "<p>No tiene clientes asignados.</p>";
+                } else {
+
+                    html += `
+                <table class="tabla-clientes">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Cédula</th>
+                            <th>Teléfono</th>
+                            <th>Deuda</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+                    cobrador.clientes.forEach(cliente => {
+
+                        html += `
+                    <tr>
+                        <td>${cliente.nombre}</td>
+                        <td>${cliente.cedula}</td>
+                        <td>${cliente.telefono}</td>
+                        <td>$${cliente.deuda}</td>
+                        <td>${cliente.estado}</td>
+                    </tr>
+                `;
+                    });
+
+                    html += `
+                    </tbody>
+                </table>
+            `;
+                }
+
+                div.innerHTML = html;
+                contenedor.appendChild(div);
+            });
+        }
+
+        function cerrarSesion() {
+            localStorage.removeItem("adminId");
+            localStorage.removeItem("adminNombre");
+            window.location.href = "login_dashboard.html";
+        }
+
+        async function crearUsuario() {
+
+            const nombre = document.getElementById("nombre").value.trim();
+            const usuario = document.getElementById("usuario").value.trim();
+            const password = document.getElementById("password").value.trim();
+
+            if (!nombre || !usuario || !password) {
+                alert("Todos los campos son obligatorios");
+                return;
+            }
+
+            const res = await fetch(`${API_URL}/cobrador`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ nombre, usuario, password })
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                alert("Usuario creado correctamente");
+            } else {
+                alert(data.mensaje);
+            }
+        }
+
+        async function buscarCobrador() {
+
+            const usuario = document.getElementById("buscarCobradorInput").value.trim();
+
+            if (!usuario) {
+                alert("Ingrese el usuario del cobrador");
+                return;
+            }
+
+            const res = await fetch(`${API_URL}/cobrador/${usuario}`);
+
+            if (!res.ok) {
+                alert("Cobrador no encontrado");
+                return;
+            }
+
+            const data = await res.json();
+
+            document.getElementById("resultadoCobrador").innerHTML = `
+        <p><strong>Usuario:</strong> ${data.usuario}</p>
+        <p><strong>Estado:</strong> ${data.activo ? "Activo" : "Deshabilitado"}</p>
+        ${data.activo
+                    ? `<button onclick="deshabilitarCobrador('${data.usuario}')">
+                Deshabilitar
+              </button>`
+                    : ""
+                }
+    `;
+        }
+
+        async function deshabilitarCobrador(usuario) {
+
+            const confirmar = confirm("¿Seguro que desea deshabilitar este cobrador?");
+            if (!confirmar) return;
+
+            const res = await fetch(`${API_URL}/cobrador/deshabilitar/${usuario}`, {
+                method: "PUT"
+            });
+
+            if (res.ok) {
+                alert("Cobrador deshabilitado correctamente");
+                buscarCobrador();
+            } else {
+                alert("Error al deshabilitar");
+            }
+        }
+
+        async function cargarCobradoresSelect() {
+
+            const res = await fetch(`${API_URL}/cobradores`);
+            const data = await res.json();
+
+            const select = document.getElementById("p_cobrador");
+            select.innerHTML = "";
+
+            data.forEach(cobrador => {
+                if (cobrador.activo) {
+                    select.innerHTML += `
+                <option value="${cobrador._id}">
+                    ${cobrador.usuario}
+                </option>
+            `;
+                }
+            });
+        }
+
+        async function crearClienteAdmin() {
+
+            const primerNombre = document.getElementById("p_primerNombre").value.trim();
+            const segundoNombre = document.getElementById("p_segundoNombre").value.trim();
+            const cedula = document.getElementById("p_cedula").value.trim();
+            const telefono = document.getElementById("p_telefono").value.trim();
+            const deuda = document.getElementById("p_deuda").value.trim();
+            const cobradorId = document.getElementById("p_cobrador").value;
+
+            // 🔒 VALIDACIÓN
+            if (!primerNombre || !segundoNombre || !cedula || !telefono || !deuda || !cobradorId) {
+                alert("Todos los campos son obligatorios");
+                return;
+            }
+
+            if (isNaN(deuda) || Number(deuda) <= 0) {
+                alert("La deuda debe ser un número válido mayor a 0");
+                return;
+            }
+
+            const data = {
+                primerNombre,
+                segundoNombre,
+                cedula,
+                telefono,
+                deuda: Number(deuda),
+                cobradorId
+            };
+
+            const res = await fetch(`${API_URL}/crear-cliente-admin`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            });
+
+            if (res.ok) {
+                alert("Cliente creado correctamente");
+            } else {
+                alert("Error al crear cliente");
+            }
+        }
+
+        async function buscarClienteAdmin() {
+
+            const cedula = document.getElementById("p_buscarCedula").value.trim();
+
+            if (!cedula) {
+                alert("Debe ingresar la cédula");
+                return;
+            }
+
+            const res = await fetch(`${API_URL}/cliente/${cedula}`);
+
+            if (!res.ok) {
+                document.getElementById("resultadoPanel").innerHTML = "Cliente no encontrado";
+                return;
+            }
+
+            const cliente = await res.json();
+
+            let estado = "";
+            let boton = "";
+
+            if (cliente.deuda > 0) {
+                estado = "<span style='color:orange;'>Pendiente</span>";
+                boton = `<button onclick="eliminarDeudaAdmin('${cliente.cedula}')">
+                    Eliminar deuda
+                 </button>`;
+            } else {
+                estado = "<span style='color:green;'>Pagado</span>";
+                boton = "";
+            }
+
+            document.getElementById("resultadoPanel").innerHTML = `
+        <table class="tabla-clientes">
+            <tr>
+                <th>Primer Nombre</th>
+                <th>Segundo Nombre</th>
+                <th>Cédula</th>
+                <th>Teléfono</th>
+                <th>Deuda</th>
+                <th>Estado</th>
+            </tr>
+            <tr>
+                <td>${cliente.primerNombre}</td>
+                <td>${cliente.segundoNombre}</td>
+                <td>${cliente.cedula}</td>
+                <td>${cliente.telefono}</td>
+                <td>$${cliente.deuda}</td>
+                <td>${estado}</td>
+            </tr>
+        </table>
+        ${boton}
+    `;
+        }
+
+        async function eliminarDeudaAdmin(cedula) {
+
+            const confirmar = confirm("¿Está seguro de eliminar la deuda?");
+            if (!confirmar) return;
+
+            const res = await fetch(`${API_URL}/eliminar-deuda/${cedula}`, {
+                method: "PUT"
+            });
+
+            if (res.ok) {
+                alert("Deuda eliminada correctamente");
+                buscarClienteAdmin(); // refresca la vista
+            } else {
+                alert("Error al eliminar deuda");
+            }
+        }
+
+    </script>
+</body>
+
+</html>

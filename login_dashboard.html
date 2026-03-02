@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Administrador</title>
+
+<style>
+body {
+    font-family: Arial;
+    background: #e5e5e5;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+}
+
+.box {
+    width: 100%;
+    max-width: 400px;
+    background: white;
+    padding: 20px;
+    border: 1px solid #ccc;
+}
+
+input, button {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+button {
+    background: black;
+    color: white;
+    border: none;
+}
+
+hr {
+    margin: 20px 0;
+}
+</style>
+</head>
+<body>
+
+<div class="box">
+
+    <h3>Login Administrador</h3>
+
+    <input id="loginUsuario" placeholder="Usuario">
+    <input id="loginPassword" type="password" placeholder="Contraseña">
+    <button onclick="loginAdmin()">Ingresar</button>
+
+    <hr>
+
+    <h3>Crear Administrador</h3>
+
+    <input id="nombre" placeholder="Nombre">
+    <input id="usuario" placeholder="Usuario">
+    <input id="password" type="password" placeholder="Contraseña">
+    <button onclick="crearAdmin()">Crear Administrador</button>
+
+</div>
+
+<script>
+
+const API_URL = "http://localhost:3000";
+
+// 🔐 LOGIN
+async function loginAdmin() {
+
+    const usuario = document.getElementById("loginUsuario").value;
+    const password = document.getElementById("loginPassword").value;
+
+    const res = await fetch(`${API_URL}/login-admin`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ usuario, password })
+    });
+
+    if (!res.ok) {
+        alert("Credenciales incorrectas");
+        return;
+    }
+
+    const data = await res.json();
+
+    localStorage.setItem("adminId", data.id);
+    localStorage.setItem("adminNombre", data.nombre);
+
+    window.location.href = "web_dashboard.html";
+}
+
+
+// ➕ CREAR ADMIN
+async function crearAdmin() {
+
+    const nombre = document.getElementById("nombre").value;
+    const usuario = document.getElementById("usuario").value;
+    const password = document.getElementById("password").value;
+
+    const res = await fetch(`${API_URL}/crear-admin`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nombre, usuario, password })
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+        alert("Administrador creado. Ahora puede iniciar sesión.");
+    } else {
+        alert(data.mensaje);
+    }
+}
+
+</script>
+
+</body>
+</html>
