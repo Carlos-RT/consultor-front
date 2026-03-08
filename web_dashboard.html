@@ -379,25 +379,61 @@
                 return;
             }
 
-            const data = {
-                primerNombre,
-                segundoNombre,
-                cedula,
-                telefono,
-                deuda: Number(deuda),
-                cobradorId
-            };
+            try {
 
-            const res = await fetch(`${API_URL}/crear-cliente-admin`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(data)
-            });
+                // 🔎 BUSCAR SI YA EXISTE LA CÉDULA
+                const validar = await fetch(`${API_URL}/cliente/${cedula}`);
 
-            if (res.ok) {
-                alert("Cliente creado correctamente");
-            } else {
-                alert("Error al crear cliente");
+                if (validar.status === 200) {
+                    // cliente encontrado
+                    alert("Ya existe un cliente registrado con esta cédula");
+                    return;
+                }
+
+                if (validar.status !== 404) {
+                    alert("Error validando la cédula");
+                    return;
+                }
+
+                // ✅ SI NO EXISTE, CREAR CLIENTE
+                const data = {
+                    primerNombre,
+                    segundoNombre,
+                    cedula,
+                    telefono,
+                    deuda: Number(deuda),
+                    cobradorId
+                };
+
+                const res = await fetch(`${API_URL}/crear-cliente-admin`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(data)
+                });
+
+                if (res.ok) {
+
+                    alert("Cliente creado correctamente");
+
+                    // limpiar formulario
+                    document.getElementById("p_primerNombre").value = "";
+                    document.getElementById("p_segundoNombre").value = "";
+                    document.getElementById("p_cedula").value = "";
+                    document.getElementById("p_telefono").value = "";
+                    document.getElementById("p_deuda").value = "";
+                    document.getElementById("p_cobrador").value = "";
+
+                } else {
+
+                    alert("Error al crear cliente");
+
+                }
+
+            } catch (error) {
+
+                console.error(error);
+                alert("Error de conexión con el servidor");
+
             }
         }
 
@@ -476,4 +512,3 @@
 </body>
 
 </html>
-

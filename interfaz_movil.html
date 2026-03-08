@@ -230,26 +230,47 @@
                 return;
             }
 
-            const data = {
-                primerNombre,
-                segundoNombre,
-                cedula,
-                telefono,
-                monto: Number(monto),
-                cobradorId: cobradorId
-            };
+            try {
 
-            const res = await fetch(`${API_URL}/cliente`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(data)
-            });
+                // 🔎 VALIDAR SI YA EXISTE LA CÉDULA
+                const validar = await fetch(`${API_URL}/cliente/cedula/${cedula}`);
 
-            if (res.ok) {
-                alert("Cliente creado correctamente");
-                document.querySelectorAll("#registrar input").forEach(i => i.value = "");
-            } else {
-                alert("Error al crear cliente");
+                if (validar.ok) {
+                    const clienteExistente = await validar.json();
+
+                    if (clienteExistente) {
+                        alert("Ya existe un cliente registrado con esta cédula");
+                        return;
+                    }
+                }
+
+                const data = {
+                    primerNombre,
+                    segundoNombre,
+                    cedula,
+                    telefono,
+                    monto: Number(monto),
+                    cobradorId: cobradorId
+                };
+
+                const res = await fetch(`${API_URL}/cliente`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(data)
+                });
+
+                if (res.ok) {
+                    alert("Cliente creado correctamente");
+
+                    document.querySelectorAll("#registrar input").forEach(i => i.value = "");
+                } else {
+                    const error = await res.json();
+                    alert(error.message || "Error al crear cliente");
+                }
+
+            } catch (error) {
+                console.error(error);
+                alert("Error de conexión con el servidor");
             }
         }
 
