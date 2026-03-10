@@ -171,6 +171,7 @@
     <script>
 
         const adminId = localStorage.getItem("adminId");
+        const oficinaId = localStorage.getItem("oficinaId");
 
         if (!adminId) {
             window.location.href = "login_dashboard.html";
@@ -204,7 +205,7 @@
 
         async function cargarLogistica() {
 
-            const res = await fetch(`${API_URL}/logistica`);
+            const res = await fetch(`${API_URL}/logistica/${oficinaId}`);
             const data = await res.json();
 
             const contenedor = document.getElementById("contenedorLogistica");
@@ -281,7 +282,12 @@
             const res = await fetch(`${API_URL}/cobrador`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ nombre, usuario, password })
+                body: JSON.stringify({
+                    nombre,
+                    usuario,
+                    password,
+                    oficinaId // 🔴 NUEVO
+                })
             });
 
             const data = await res.json();
@@ -291,6 +297,7 @@
             } else {
                 alert(data.mensaje);
             }
+
         }
 
         async function buscarCobrador() {
@@ -342,7 +349,7 @@
 
         async function cargarCobradoresSelect() {
 
-            const res = await fetch(`${API_URL}/cobradores`);
+            const res = await fetch(`${API_URL}/cobradores/${oficinaId}`);
             const data = await res.json();
 
             const select = document.getElementById("p_cobrador");
