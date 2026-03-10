@@ -29,8 +29,14 @@ padding:10px;
 margin-bottom:10px;
 }
 
-button{
+.login{
 background:#3498db;
+color:white;
+border:none;
+}
+
+.crear{
+background:#27ae60;
 color:white;
 border:none;
 }
@@ -43,12 +49,19 @@ border:none;
 
 <div class="container">
 
-<h2>Login Super Admin</h2>
+<h2>Super Admin</h2>
 
+<input id="nombre" placeholder="Nombre (solo para crear)">
 <input id="usuario" placeholder="Usuario">
-<input id="password" placeholder="Contraseña" type="password">
+<input id="password" type="password" placeholder="Contraseña">
 
-<button onclick="login()">Iniciar sesión</button>
+<button class="login" onclick="login()">Iniciar sesión</button>
+
+<hr>
+
+<h3>Crear Super Admin</h3>
+
+<button class="crear" onclick="crearSuperAdmin()">Crear Super Admin</button>
 
 </div>
 
@@ -62,14 +75,16 @@ const usuario = document.getElementById("usuario").value.trim()
 const password = document.getElementById("password").value.trim()
 
 if(!usuario || !password){
-alert("Complete todos los campos")
+alert("Ingrese usuario y contraseña")
 return
 }
 
 const res = await fetch(`${API_URL}/login-superadmin`,{
+
 method:"POST",
 headers:{"Content-Type":"application/json"},
 body:JSON.stringify({usuario,password})
+
 })
 
 const data = await res.json()
@@ -84,6 +99,43 @@ window.location.href="superadmin_dashboard.html"
 }else{
 
 alert(data.mensaje)
+
+}
+
+}
+
+async function crearSuperAdmin(){
+
+const nombre = document.getElementById("nombre").value.trim()
+const usuario = document.getElementById("usuario").value.trim()
+const password = document.getElementById("password").value.trim()
+
+if(!nombre || !usuario || !password){
+alert("Complete todos los campos")
+return
+}
+
+const res = await fetch(`${API_URL}/crear-superadmin`,{
+
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({
+nombre,
+usuario,
+password
+})
+
+})
+
+const data = await res.json()
+
+if(res.ok){
+
+alert("Super admin creado correctamente. Ahora puede iniciar sesión.")
+
+}else{
+
+alert(data.mensaje || "Error creando super admin")
 
 }
 
