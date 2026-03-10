@@ -90,6 +90,8 @@
 
 <body>
 
+    <h2 id="tituloOficina"></h2>
+
     <div style="text-align:right; margin-bottom:10px;">
         <button onclick="cerrarSesion()" style="background:red; color:white; border:none;">
             Cerrar sesión
@@ -169,6 +171,11 @@
     </div>
 
     <script>
+
+        const oficinaNombre = localStorage.getItem("oficinaNombre")
+
+        document.getElementById("tituloOficina").innerText =
+            "Oficina: " + oficinaNombre
 
         const adminId = localStorage.getItem("adminId");
         const oficinaId = localStorage.getItem("oficinaId");

@@ -1,143 +1,145 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Administrador</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administrador</title>
 
-<style>
+    <style>
+        body {
+            font-family: Arial;
+            background: #e5e5e5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
 
-body{
-font-family:Arial;
-background:#e5e5e5;
-display:flex;
-justify-content:center;
-align-items:center;
-min-height:100vh;
-margin:0;
-}
+        .box {
+            width: 100%;
+            max-width: 400px;
+            background: white;
+            padding: 20px;
+            border: 1px solid #ccc;
+        }
 
-.box{
-width:100%;
-max-width:400px;
-background:white;
-padding:20px;
-border:1px solid #ccc;
-}
+        input,
+        button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
 
-input,button{
-width:100%;
-padding:10px;
-margin-bottom:10px;
-}
+        button {
+            background: black;
+            color: white;
+            border: none;
+        }
 
-button{
-background:black;
-color:white;
-border:none;
-}
-
-hr{
-margin:20px 0;
-}
-
-</style>
+        hr {
+            margin: 20px 0;
+        }
+    </style>
 </head>
 
 <body>
 
-<div class="box">
+    <div class="box">
 
-<h3>Login Administrador</h3>
+        <h3>Login Administrador</h3>
 
-<input id="loginUsuario" placeholder="Usuario">
-<input id="loginPassword" type="password" placeholder="Contraseña">
+        <input id="loginUsuario" placeholder="Usuario">
+        <input id="loginPassword" type="password" placeholder="Contraseña">
 
-<button onclick="loginAdmin()">Ingresar</button>
+        <button onclick="loginAdmin()">Ingresar</button>
 
-<hr>
+        <hr>
 
-<h3>Crear Administrador</h3>
+        <h3>Crear Administrador</h3>
 
-<input id="nombre" placeholder="Nombre">
-<input id="usuario" placeholder="Usuario">
-<input id="password" type="password" placeholder="Contraseña">
+        <input id="nombre" placeholder="Nombre">
+        <input id="usuario" placeholder="Usuario">
+        <input id="password" type="password" placeholder="Contraseña">
 
-<!-- NUEVO -->
-<input id="oficinaId" placeholder="ID de Oficina">
+        <!-- NUEVO -->
+        <input id="oficinaId" placeholder="ID de Oficina">
 
-<button onclick="crearAdmin()">Crear Administrador</button>
+        <button onclick="crearAdmin()">Crear Administrador</button>
 
-</div>
+    </div>
 
-<script>
+    <script>
 
-const API_URL = "https://consultor-back.vercel.app"
-
-
-// LOGIN ADMIN
-async function loginAdmin(){
-
-const usuario = document.getElementById("loginUsuario").value
-const password = document.getElementById("loginPassword").value
-
-const res = await fetch(`${API_URL}/login-admin`,{
-
-method:"POST",
-headers:{ "Content-Type":"application/json" },
-body:JSON.stringify({ usuario, password })
-
-})
-
-if(!res.ok){
-alert("Credenciales incorrectas")
-return
-}
-
-const data = await res.json()
-
-localStorage.setItem("adminId",data.id)
-localStorage.setItem("adminNombre",data.nombre)
-localStorage.setItem("oficinaId",data.oficinaId) // 🔴 importante
-
-window.location.href="web_dashboard.html"
-
-}
+        const API_URL = "https://consultor-back.vercel.app"
 
 
+        // LOGIN ADMIN
+        async function loginAdmin() {
 
-// CREAR ADMIN
-async function crearAdmin(){
+            const usuario = document.getElementById("loginUsuario").value
+            const password = document.getElementById("loginPassword").value
 
-const nombre = document.getElementById("nombre").value
-const usuario = document.getElementById("usuario").value
-const password = document.getElementById("password").value
-const oficinaId = document.getElementById("oficinaId").value
+            const res = await fetch(`${API_URL}/login-admin`, {
 
-if(!nombre || !usuario || !password || !oficinaId){
-alert("Todos los campos son obligatorios")
-return
-}
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ usuario, password })
 
-const res = await fetch(`${API_URL}/crear-admin`,{
+            })
 
-method:"POST",
-headers:{ "Content-Type":"application/json" },
-body:JSON.stringify({ nombre, usuario, password, oficinaId })
+            if (!res.ok) {
+                alert("Credenciales incorrectas")
+                return
+            }
 
-})
+            const data = await res.json()
 
-const data = await res.json()
+            localStorage.setItem("adminId", data.id)
+            localStorage.setItem("adminNombre", data.nombre)
+            localStorage.setItem("oficinaId", data.oficinaId) // 🔴 importante
+            localStorage.setItem("oficinaNombre", data.oficinaNombre)
 
-if(res.ok){
-alert("Administrador creado. Ahora puede iniciar sesión.")
-}else{
-alert(data.mensaje)
-}
+            window.location.href = "web_dashboard.html"
 
-}
+        }
 
-</script>
+
+
+        // CREAR ADMIN
+        async function crearAdmin() {
+
+            const nombre = document.getElementById("nombre").value
+            const usuario = document.getElementById("usuario").value
+            const password = document.getElementById("password").value
+            const oficinaId = document.getElementById("oficinaId").value
+
+            if (!nombre || !usuario || !password || !oficinaId) {
+                alert("Todos los campos son obligatorios")
+                return
+            }
+
+            const res = await fetch(`${API_URL}/crear-admin`, {
+
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ nombre, usuario, password, oficinaId })
+
+            })
+
+            const data = await res.json()
+
+            if (res.ok) {
+                alert("Administrador creado. Ahora puede iniciar sesión.")
+            } else {
+                alert(data.mensaje)
+            }
+
+        }
+
+    </script>
 
 </body>
+
 </html>
