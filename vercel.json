@@ -1,6 +1,7 @@
 {
   "routes": [
     { "src": "/", "dest": "/login.html" },
-    { "src": "/admin", "dest": "/login_dashboard.html" }
+    { "src": "/admin", "dest": "/login_dashboard.html" },
+    { "src": "/superadmin", "dest": "/superadmin_login.html" }
   ]
 }
