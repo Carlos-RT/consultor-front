@@ -3,201 +3,202 @@
 
 <head>
 
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Panel Super Admin</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Super Admin</title>
 
-<style>
+    <style>
+        body {
+            font-family: Arial;
+            background: #f2f2f2;
+            padding: 20px;
+        }
 
-body{
-font-family:Arial;
-background:#f2f2f2;
-padding:20px;
-}
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border: 1px solid #ccc;
+        }
 
-.container{
-max-width:600px;
-margin:auto;
-background:white;
-padding:20px;
-border:1px solid #ccc;
-}
+        input,
+        button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
 
-input,button{
-width:100%;
-padding:10px;
-margin-bottom:10px;
-}
+        button {
+            background: #27ae60;
+            color: white;
+            border: none;
+        }
 
-button{
-background:#27ae60;
-color:white;
-border:none;
-}
+        .oficina-card {
+            background: #f4f4f4;
+            padding: 15px;
+            margin-top: 10px;
+            border-radius: 6px;
+        }
 
-.oficina-card{
-background:#f4f4f4;
-padding:15px;
-margin-top:10px;
-border-radius:6px;
-}
-
-.eliminar{
-background:red;
-margin-top:10px;
-}
-
-</style>
+        .eliminar {
+            background: red;
+            margin-top: 10px;
+        }
+    </style>
 
 </head>
 
 <body>
 
-<div style="text-align:right;margin-bottom:10px;">
-<button onclick="cerrarSesion()" style="background:red">Cerrar sesión</button>
-</div>
+    <div style="text-align:right;margin-bottom:10px;">
+        <button onclick="cerrarSesion()" style="background:red">Cerrar sesión</button>
+    </div>
 
-<div class="container">
+    <div class="container">
 
-<h2>Panel Super Admin</h2>
+        <h2>Panel Super Admin</h2>
 
-<h3>Crear Oficina</h3>
+        <h3>Crear Oficina</h3>
 
-<input id="nombre" placeholder="Nombre de la oficina">
-<input id="direccion" placeholder="Dirección">
-<input id="telefono" placeholder="Teléfono">
+        <input id="nombre" placeholder="Nombre de la oficina">
+        <input id="direccion" placeholder="Dirección">
+        <input id="telefono" placeholder="Teléfono">
 
-<button onclick="crearOficina()">Crear oficina</button>
+        <button onclick="crearOficina()">Crear oficina</button>
 
-<hr>
+        <hr>
 
-<h3>Oficinas creadas</h3>
+        <h3>Oficinas creadas</h3>
 
-<div id="listaOficinas"></div>
+        <div id="listaOficinas"></div>
 
-</div>
+    </div>
 
-<script>
+    <script>
 
-const API_URL="https://consultor-back.vercel.app"
+        const API_URL = "https://consultor-back.vercel.app"
 
-const superAdminId = localStorage.getItem("superAdminId")
+        const superAdminId = localStorage.getItem("superAdminId")
 
-if(!superAdminId){
-window.location.href="superadmin_login.html"
-}
+        if (!superAdminId) {
+            window.location.href = "superadmin_login.html"
+        }
 
-cargarOficinas()
+        cargarOficinas()
 
-function cerrarSesion(){
+        function cerrarSesion() {
 
-localStorage.removeItem("superAdminId")
-localStorage.removeItem("superAdminNombre")
+            localStorage.removeItem("superAdminId")
+            localStorage.removeItem("superAdminNombre")
 
-window.location.href="superadmin_login.html"
+            window.location.href = "superadmin_login.html"
 
-}
+        }
 
-async function crearOficina(){
+        async function crearOficina() {
 
-const nombre=document.getElementById("nombre").value.trim()
-const direccion=document.getElementById("direccion").value.trim()
-const telefono=document.getElementById("telefono").value.trim()
+            const nombre = document.getElementById("nombre").value.trim()
+            const direccion = document.getElementById("direccion").value.trim()
+            const telefono = document.getElementById("telefono").value.trim()
 
-if(!nombre || !direccion || !telefono){
-alert("Todos los campos son obligatorios")
-return
-}
+            if (!nombre || !direccion || !telefono) {
+                alert("Todos los campos son obligatorios")
+                return
+            }
 
-const res=await fetch(`${API_URL}/oficina`,{
+            const res = await fetch(`${API_URL}/oficina`, {
 
-method:"POST",
-headers:{"Content-Type":"application/json"},
-body:JSON.stringify({
-nombre,
-direccion,
-telefono,
-superAdminId
-})
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    nombre,
+                    direccion,
+                    telefono,
+                    superAdminId
+                })
 
-})
+            })
 
-if(res.ok){
+            if (res.ok) {
 
-alert("Oficina creada")
+                alert("Oficina creada")
 
-document.getElementById("nombre").value=""
-document.getElementById("direccion").value=""
-document.getElementById("telefono").value=""
+                document.getElementById("nombre").value = ""
+                document.getElementById("direccion").value = ""
+                document.getElementById("telefono").value = ""
 
-cargarOficinas()
+                cargarOficinas()
 
-}else{
+            } else {
 
-alert("Error creando oficina")
+                alert("Error creando oficina")
 
-}
+            }
 
-}
+        }
 
-async function cargarOficinas(){
+        async function cargarOficinas() {
 
-const res=await fetch(`${API_URL}/oficinas/${superAdminId}`)
-const data=await res.json()
+            const res = await fetch(`${API_URL}/oficinas/${superAdminId}`)
+            const data = await res.json()
 
-const contenedor=document.getElementById("listaOficinas")
+            const contenedor = document.getElementById("listaOficinas")
 
-contenedor.innerHTML=""
+            contenedor.innerHTML = ""
 
-data.forEach(oficina=>{
+            data.forEach(oficina => {
 
-const div=document.createElement("div")
-div.classList.add("oficina-card")
+                const div = document.createElement("div")
+                div.classList.add("oficina-card")
 
-div.innerHTML=`
+                div.innerHTML = `
 
-<b>${oficina.nombre}</b>
+            <b>${oficina.nombre}</b>
 
-<p>Dirección: ${oficina.direccion}</p>
-<p>Teléfono: ${oficina.telefono}</p>
+            <p>Dirección: ${oficina.direccion}</p>
+            <p>Teléfono: ${oficina.telefono}</p>
+            <p style="color:gray;font-size:12px">ID: ${oficina._id}</p>
 
-<button class="eliminar" onclick="eliminarOficina('${oficina._id}')">
-Eliminar oficina
-</button>
+            <button class="eliminar" onclick="eliminarOficina('${oficina._id}')">
+               Eliminar oficina
+            </button>
 
-`
+        `
 
-contenedor.appendChild(div)
+                contenedor.appendChild(div)
 
-})
+            })
 
-}
+        }
 
-async function eliminarOficina(id){
+        async function eliminarOficina(id) {
 
-const confirmar=confirm("¿Seguro que desea eliminar esta oficina?")
+            const confirmar = confirm("¿Seguro que desea eliminar esta oficina?")
 
-if(!confirmar) return
+            if (!confirmar) return
 
-const res=await fetch(`${API_URL}/oficina/${id}`,{
-method:"DELETE"
-})
+            const res = await fetch(`${API_URL}/oficina/${id}`, {
+                method: "DELETE"
+            })
 
-if(res.ok){
+            if (res.ok) {
 
-alert("Oficina eliminada")
+                alert("Oficina eliminada")
 
-cargarOficinas()
+                cargarOficinas()
 
-}else{
+            } else {
 
-alert("Error eliminando oficina")
+                alert("Error eliminando oficina")
 
-}
+            }
 
-}
+        }
 
-</script>
+    </script>
 
 </body>
+
 </html>
