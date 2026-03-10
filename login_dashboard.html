@@ -1,20 +1,25 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
 <meta charset="UTF-8">
-<title>Login Admin</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Administrador</title>
 
 <style>
+
 body{
 font-family:Arial;
-background:#f2f2f2;
-padding:20px;
+background:#e5e5e5;
+display:flex;
+justify-content:center;
+align-items:center;
+min-height:100vh;
+margin:0;
 }
 
-.container{
+.box{
+width:100%;
 max-width:400px;
-margin:auto;
 background:white;
 padding:20px;
 border:1px solid #ccc;
@@ -27,65 +32,107 @@ margin-bottom:10px;
 }
 
 button{
-background:#3498db;
+background:black;
 color:white;
 border:none;
 }
-</style>
 
+hr{
+margin:20px 0;
+}
+
+</style>
 </head>
 
 <body>
 
-<div class="container">
+<div class="box">
 
-<h2>Login Administrador</h2>
+<h3>Login Administrador</h3>
 
+<input id="loginUsuario" placeholder="Usuario">
+<input id="loginPassword" type="password" placeholder="Contraseña">
+
+<button onclick="loginAdmin()">Ingresar</button>
+
+<hr>
+
+<h3>Crear Administrador</h3>
+
+<input id="nombre" placeholder="Nombre">
 <input id="usuario" placeholder="Usuario">
 <input id="password" type="password" placeholder="Contraseña">
 
-<button onclick="login()">Iniciar sesión</button>
+<!-- NUEVO -->
+<input id="oficinaId" placeholder="ID de Oficina">
+
+<button onclick="crearAdmin()">Crear Administrador</button>
 
 </div>
 
 <script>
 
-const API_URL="https://consultor-back.vercel.app"
+const API_URL = "https://consultor-back.vercel.app"
 
-async function login(){
 
-const usuario=document.getElementById("usuario").value.trim()
-const password=document.getElementById("password").value.trim()
+// LOGIN ADMIN
+async function loginAdmin(){
 
-if(!usuario || !password){
-alert("Complete los campos")
-return
-}
+const usuario = document.getElementById("loginUsuario").value
+const password = document.getElementById("loginPassword").value
 
-const res=await fetch(`${API_URL}/login-admin`,{
+const res = await fetch(`${API_URL}/login-admin`,{
 
 method:"POST",
-headers:{"Content-Type":"application/json"},
-body:JSON.stringify({usuario,password})
+headers:{ "Content-Type":"application/json" },
+body:JSON.stringify({ usuario, password })
 
 })
 
-const data=await res.json()
+if(!res.ok){
+alert("Credenciales incorrectas")
+return
+}
 
-if(res.ok){
+const data = await res.json()
 
 localStorage.setItem("adminId",data.id)
 localStorage.setItem("adminNombre",data.nombre)
-
-// 🔴 // NUEVO
-localStorage.setItem("oficinaId",data.oficinaId)
+localStorage.setItem("oficinaId",data.oficinaId) // 🔴 importante
 
 window.location.href="web_dashboard.html"
 
+}
+
+
+
+// CREAR ADMIN
+async function crearAdmin(){
+
+const nombre = document.getElementById("nombre").value
+const usuario = document.getElementById("usuario").value
+const password = document.getElementById("password").value
+const oficinaId = document.getElementById("oficinaId").value
+
+if(!nombre || !usuario || !password || !oficinaId){
+alert("Todos los campos son obligatorios")
+return
+}
+
+const res = await fetch(`${API_URL}/crear-admin`,{
+
+method:"POST",
+headers:{ "Content-Type":"application/json" },
+body:JSON.stringify({ nombre, usuario, password, oficinaId })
+
+})
+
+const data = await res.json()
+
+if(res.ok){
+alert("Administrador creado. Ahora puede iniciar sesión.")
 }else{
-
 alert(data.mensaje)
-
 }
 
 }
