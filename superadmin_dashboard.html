@@ -160,19 +160,26 @@
             <p>Dirección: ${oficina.direccion}</p>
             <p>Teléfono: ${oficina.telefono}</p>
 
-            <p style="font-size:14px;color:#222;margin-top:8px;">
+            <p style="font-size:14px;color:#111;margin-top:8px;">
                 <b>ID para nuevos administradores:</b>
             </p>
 
             <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
-                <span id="id-${oficina._id}" style="font-size:14px;color:#111;">
+                
+                <span style="font-size:14px;color:#111;">
                     ${oficina._id}
                 </span>
 
                 <button onclick="copiarId('${oficina._id}')"
-                style="padding:4px 8px;font-size:12px;cursor:pointer;">
-                    Copiar
+                style="
+                padding:2px 6px;
+                font-size:11px;
+                width:auto;
+                cursor:pointer;
+                ">
+                Copiar
                 </button>
+
             </div>
 
             <button class="eliminar" onclick="eliminarOficina('${oficina._id}')">
