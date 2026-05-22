@@ -111,6 +111,9 @@
             <div class="tab" onclick="showTab('panel')">
                 panel de control
             </div>
+            <div class="tab" onclick="showTab('soporte')">
+                información para el chatbot
+            </div>
         </div>
 
         <!-- CONTENIDO REGISTRAR -->
@@ -165,6 +168,21 @@
             <button onclick="buscarClienteAdmin()">Buscar</button>
 
             <div id="resultadoPanel"></div>
+
+        </div>
+
+        <!-- CONTENIDO SOPORTE -->
+        <div id="soporte" class="content">
+
+            <h3>Subir PDF para el chatbot</h3>
+
+            <input type="file" id="pdfSoporte" accept="application/pdf">
+
+            <button onclick="subirPDFSoporte()">
+                Procesar PDF
+            </button>
+
+            <div id="resultadoSoporte"></div>
 
         </div>
 
@@ -519,6 +537,64 @@
                 buscarClienteAdmin(); // refresca la vista
             } else {
                 alert("Error al eliminar deuda");
+            }
+        }
+
+        async function subirPDFSoporte() {
+
+            const archivo =
+                document.getElementById("pdfSoporte").files[0];
+
+            if (!archivo) {
+
+                alert("Seleccione un PDF");
+
+                return;
+            }
+
+            const formData = new FormData();
+
+            formData.append("pdf", archivo);
+
+            formData.append("oficinaId", oficinaId);
+
+            try {
+
+                const res = await fetch(
+                    `${API_URL}/subir-soporte`,
+                    {
+                        method: "POST",
+                        body: formData
+                    }
+                );
+
+                const data = await res.json();
+
+                if (res.ok) {
+
+                    document.getElementById(
+                        "resultadoSoporte"
+                    ).innerHTML =
+                        `
+        <p>
+          Documento procesado correctamente
+        </p>
+
+        <p>
+          Chunks: ${data.totalChunks}
+        </p>
+        `;
+
+                } else {
+
+                    alert(data.mensaje);
+                }
+
+            } catch (error) {
+
+                console.error(error);
+
+                alert("Error subiendo PDF");
             }
         }
 
